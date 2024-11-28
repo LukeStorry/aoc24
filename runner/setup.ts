@@ -1,9 +1,12 @@
-import { mkdirSync, writeFileSync, existsSync, cp, cpSync } from "fs";
+import { writeFileSync, existsSync, cpSync } from "fs";
 import { config } from "dotenv";
 import { forEach, map } from "lodash";
 config();
 
-const YEAR = process.env.YEAR || 2023;
+const YEAR = process.env.YEAR;
+if (!YEAR) {
+  throw new Error("Missing YEAR environment variable.");
+}
 
 async function aocFetch(path: string) {
   const res = await fetch(`https://adventofcode.com/${YEAR}/${path}`, {
@@ -42,7 +45,7 @@ async function setupDir(day: number) {
 
 // Just set up all folders every time - it takes a fraction of a second
 const today = new Date();
-const lastDay = today.getFullYear() === YEAR ? today.getDate() : 25;
+const lastDay = today.getFullYear() === parseInt(YEAR) ? today.getDate() : 25;
 if (process.argv[2]) {
   setupDir(parseInt(process.argv[2], 10));
 } else {

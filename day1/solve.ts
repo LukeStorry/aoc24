@@ -1,69 +1,34 @@
 import { solve } from "../runner/typescript";
-import { max, sum, groupBy } from "lodash";
+import { sum, countBy } from "lodash";
 
-type Parsed = {};
-function parser(input: string) {
-  function lineParser(line: string): Parsed[] {
-    console.log(line);
-
-    const values = line.match(/\d/g).map(Number);
-    console.log(values);
-    console.log("\n");
-
-    return values;
-  }
-
-  const lines = input.split("\n");
-  // const firstLine = lines[0];
-  // const first = lineParser(firstLine);
-
-  // return [first];
-  // return lines.slice(0, lines.length).map(lineParser);
-  const result = lines.map(lineParser);
-  return result;
+type Parsed = [number[], number[]];
+function parser(input: string): Parsed {
+  const [left, right] = [[], []];
+  input.split("\n").forEach((line) => {
+    const [a, b] = line.split("   ").map(Number);
+    left.push(a);
+    right.push(b);
+  });
+  return [left, right];
 }
 
-function part1(values: any[]): number {
-  function func(value) {
-    console.log(value);
-    const result = value + value;
-
-    console.log(value);
-    console.log("\n");
-
-    return result;
-  }
-
-  const out1 = func(values[0]);
-
-  console.log(out1);
-
-  return sum(values.map(func));
+function part1([left, right]: Parsed): number {
+  const ls = left.sort();
+  const rs = right.sort();
+  // sum of differences between each pair
+  return sum(ls.map((l, i) => Math.abs(l - rs[i])));
 }
 
-function part2(values: any[]): any[] {
-  function func2(a) {
-    return a;
-  }
-
-  const out1 = func2(values[0]);
-
-  console.log(out1);
-
-  return values.map(func2);
+function part2([left, right]: Parsed): number {
+  const counts = countBy(right);
+  return sum(left.map((l) => l * counts[l] || 0));
 }
 
 solve({
   parser: parser,
   part1: part1,
-  // part2: part2,
+  part2: part2,
 
-  part1Tests: [
-    ["aaa", 0],
-    // ["a", 0],
-  ],
-  part2Tests: [
-    // ["aaa", 0],
-    // ["a", 0],
-  ],
+  part1Tests: [["3   4\n4   3\n2   5\n1   3\n3   9\n3   3", 11]],
+  part2Tests: [["3   4\n4   3\n2   5\n1   3\n3   9\n3   3", 31]],
 });

@@ -3,26 +3,23 @@ import { sum } from "lodash";
 
 function part1(input: string) {
   const matches = input.matchAll(/mul\((?<X>\d{1,3}),(?<Y>\d{1,3})\)/g);
-  const muls = Array.from(matches).map(
-    ({ groups: { X, Y } }) => parseInt(X) * parseInt(Y)
+  return sum(
+    Array.from(matches).map(({ groups: { X, Y } }) => parseInt(X) * parseInt(Y))
   );
-  return sum(muls);
 }
 
 function part2(input: string) {
   const matches = input.matchAll(
-    /do\(\)|don't\(\)|mul\((?<X>\d{1,3}),(?<Y>\d{1,3})\)/g
+    /(?<instruction>do|don't)\(\)|mul\((?<X>\d{1,3}),(?<Y>\d{1,3})\)/g
   );
-  const { sum } = Array.from(matches).reduce(
-    ({ enabled, sum }, { 0: m, groups: { X, Y } }) => {
-      if (m === "do()") return { enabled: true, sum };
-      if (m === "don't()") return { enabled: false, sum };
-      if (enabled) return { enabled, sum: sum + parseInt(X) * parseInt(Y) };
-      return { enabled, sum };
-    },
-    { enabled: true, sum: 0 }
-  );
-  return sum;
+  let enabled = true;
+  const vals = Array.from(matches).map(({ groups: { X, Y, instruction } }) => {
+    if (instruction === "do") enabled = true;
+    if (instruction === "don't") enabled = false;
+    return enabled && X && Y ? parseInt(X) * parseInt(Y) : 0;
+  });
+
+  return sum(vals);
 }
 
 solve({

@@ -74,7 +74,10 @@ export async function solve<T, TResult1, TResult2>({
       solutionsFile[`part${part}`];
 
     const alreadyCorrectlySubmitted = correctSolution != null;
-    if (attemptedSolutions.includes(answer.toString()) || alreadyCorrectlySubmitted) {
+    if (
+      attemptedSolutions.includes(answer.toString()) ||
+      alreadyCorrectlySubmitted
+    ) {
       if (!alreadyCorrectlySubmitted) {
         console.log("Incorrect previously tried answer");
       } else {
@@ -113,10 +116,10 @@ async function checkAnswer(part: number, day: string, answer: string) {
   );
   const body = await result.text();
 
-  if (body.includes(" already complete ")) {
-    console.log("Something's gone wrone - this part is already complete!?");
-    return false;
-  }
+  // if (body.includes(" already complete ")) {
+  //   console.log("Something's gone wrone - this part is already complete!?");
+  //   return false;
+  // }
   if (body.includes("too recently")) {
     console.error(`RETRY SUBMITTING`);
     console.error(`RETRY SUBMITTING`);
@@ -127,7 +130,7 @@ async function checkAnswer(part: number, day: string, answer: string) {
     console.error(`RETRY SUBMITTING`);
     console.error(`RETRY SUBMITTING`);
     return false;
-    throw new Error(`Wait before submitting\n${body}`);
+    // throw new Error(`Wait before submitting\n${body}`);
   }
   if (body.includes("not the right answer")) {
     console.log(`Wrong answer\n${body}`);

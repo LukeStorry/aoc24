@@ -1,56 +1,58 @@
 import { solve } from "../runner/typescript";
-import { max, sum, groupBy, values, range } from "lodash";
-
-const directions = {
-  N: [0, -1],
-  NE: [1, -1],
-  E: [1, 0],
-  SE: [1, 1],
-  S: [0, 1],
-  SW: [-1, 1],
-  W: [-1, 0],
-  NW: [-1, -1],
-} as const;
+import { sum, range } from "lodash";
 
 function part1(input: string): number {
   const lines = input.split("\n");
 
-  const xCoords = lines.flatMap((line, y) =>
-    line
-      .split("")
-      .map((c, x) => ({ c, x, y }))
-      .filter(({ c }) => c === "X")
-  );
-  console.log(xCoords);
+  const directions = [
+    [0, -1], // N
+    [1, -1], // NE
+    [1, 0], // E
+    [1, 1], // SE
+    [0, 1], // S
+    [-1, 1], // SW
+    [-1, 0], // W
+    [-1, -1], // NW
+  ];
 
-  const out1 = xCoords
-    .flatMap(({ x, y }) =>
-      Object.values(directions).map(([dx, dy]) =>
-        range(0, 4).every((i) => lines[y + i * dy]?.[x + i * dx] === "XMAS"[i])
-      )
+  const countXmasStartingFrom = (x: number, y: number): number =>
+    directions.filter(([dx, dy]) =>
+      range(0, 4).every((i) => lines[y + i * dy]?.[x + i * dx] === "XMAS"[i])
+    ).length;
+
+  return sum(
+    lines.flatMap((line, y) =>
+      range(line.length).map((x) => countXmasStartingFrom(x, y))
     )
-    .filter(Boolean).length;
-  console.log(out1);
-
-  return out1;
+  );
 }
 
-function part2(values: any[]): any[] {
-  function func2(a) {
-    return a;
-  }
+function part2(input: string): number {
+  const lines = input.split("\n");
 
-  const out1 = func2(values[0]);
+  const countCrossMasStartingFrom = (x: number, y: number): number => {
+    if (lines[y][x] !== "A") return 0;
+    console.log(x, y);
+    const diagonals = [
+      lines[y - 1]?.[x + 1],
+      lines[y + 1]?.[x + 1],
+      lines[y + 1]?.[x - 1],
+      lines[y - 1]?.[x - 1],
+    ].join("");
+    if (["MMSS", "SMMS", "MSSM", "SSMM"].includes(diagonals)) return 1;
+    return 0;
+  };
 
-  console.log(out1);
-
-  return values.map(func2);
+  return sum(
+    lines.flatMap((line, y) =>
+      range(line.length).map((x) => countCrossMasStartingFrom(x, y))
+    )
+  );
 }
 
 solve({
-  part1,
-  // part2: part2,
-
+  // part1,
+  part2,
   part1Tests: [
     [
       "MMMSXXMASM\nMSAMXMSMSA\nAMXSXMAAMM\nMSAMASMSMX\nXMASAMXAMM\nXXAMMXXAMA\nSMSMSASXSS\nSAXAMASAAA\nMAMMMXMMMM\nMXMXAXMASX",
@@ -58,7 +60,9 @@ solve({
     ],
   ],
   part2Tests: [
-    // ["aaa", 0],
-    // ["a", 0],
+    [
+      "MMMSXXMASM\nMSAMXMSMSA\nAMXSXMAAMM\nMSAMASMSMX\nXMASAMXAMM\nXXAMMXXAMA\nSMSMSASXSS\nSAXAMASAAA\nMAMMMXMMMM\nMXMXAXMASX",
+      9,
+    ],
   ],
 });

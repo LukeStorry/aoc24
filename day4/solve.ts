@@ -1,5 +1,5 @@
 import { solve } from "../runner/typescript";
-import { sum, range } from "lodash";
+import { sum } from "lodash";
 
 function getAllCoordinates(lines: string[]): [number, number][] {
   return lines.flatMap((line, y) =>
@@ -24,7 +24,7 @@ function part1(input: string): number {
   const countXmasStartingFrom = ([x, y]): number =>
     directions.filter(([dx, dy]) =>
       ["X", "M", "A", "S"].every(
-        (c, i) => lines[y + i * dy]?.[x + i * dx] === c
+        (char, i) => char === lines[y + i * dy]?.[x + i * dx]
       )
     ).length;
 
@@ -34,18 +34,26 @@ function part1(input: string): number {
 function part2(input: string): number {
   const lines = input.split("\n");
 
-  const countCrossMasStartingFrom = ([x, y]: [number, number]): boolean => {
+  function isMiddleOfCrossMas([x, y]: [number, number]): boolean {
     if (lines[y][x] !== "A") return false;
-    const diagonals = [
-      lines[y - 1]?.[x + 1],
-      lines[y + 1]?.[x + 1],
-      lines[y + 1]?.[x - 1],
-      lines[y - 1]?.[x - 1],
-    ].join("");
-    return ["MMSS", "SMMS", "MSSM", "SSMM"].includes(diagonals);
-  };
 
-  return getAllCoordinates(lines).filter(countCrossMasStartingFrom).length;
+    // get the four diagonal characters, in order
+    const diagonals = [
+      lines[y - 1]?.[x + 1], // NE
+      lines[y + 1]?.[x + 1], // SE
+      lines[y + 1]?.[x - 1], // SW
+      lines[y - 1]?.[x - 1], // NW
+    ];
+
+    // Check if any rotation matches the pattern MMSS
+    return [0, 1, 2, 3].some((rotation) =>
+      ["M", "M", "S", "S"].every(
+        (char, i) => char === diagonals[(rotation + i) % 4]
+      )
+    );
+  }
+
+  return getAllCoordinates(lines).filter(isMiddleOfCrossMas).length;
 }
 
 solve({

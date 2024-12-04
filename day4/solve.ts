@@ -1,6 +1,12 @@
 import { solve } from "../runner/typescript";
 import { sum, range } from "lodash";
 
+function getAllCoordinates(lines: string[]): [number, number][] {
+  return lines.flatMap((line, y) =>
+    line.split("").map((_, x) => [x, y] satisfies [number, number])
+  );
+}
+
 function part1(input: string): number {
   const lines = input.split("\n");
 
@@ -15,43 +21,35 @@ function part1(input: string): number {
     [-1, -1], // NW
   ];
 
-  const countXmasStartingFrom = (x: number, y: number): number =>
+  const countXmasStartingFrom = ([x, y]): number =>
     directions.filter(([dx, dy]) =>
-      range(0, 4).every((i) => lines[y + i * dy]?.[x + i * dx] === "XMAS"[i])
+      ["X", "M", "A", "S"].every(
+        (c, i) => lines[y + i * dy]?.[x + i * dx] === c
+      )
     ).length;
 
-  return sum(
-    lines.flatMap((line, y) =>
-      range(line.length).map((x) => countXmasStartingFrom(x, y))
-    )
-  );
+  return sum(getAllCoordinates(lines).map(countXmasStartingFrom));
 }
 
 function part2(input: string): number {
   const lines = input.split("\n");
 
-  const countCrossMasStartingFrom = (x: number, y: number): number => {
-    if (lines[y][x] !== "A") return 0;
-    console.log(x, y);
+  const countCrossMasStartingFrom = ([x, y]: [number, number]): boolean => {
+    if (lines[y][x] !== "A") return false;
     const diagonals = [
       lines[y - 1]?.[x + 1],
       lines[y + 1]?.[x + 1],
       lines[y + 1]?.[x - 1],
       lines[y - 1]?.[x - 1],
     ].join("");
-    if (["MMSS", "SMMS", "MSSM", "SSMM"].includes(diagonals)) return 1;
-    return 0;
+    return ["MMSS", "SMMS", "MSSM", "SSMM"].includes(diagonals);
   };
 
-  return sum(
-    lines.flatMap((line, y) =>
-      range(line.length).map((x) => countCrossMasStartingFrom(x, y))
-    )
-  );
+  return getAllCoordinates(lines).filter(countCrossMasStartingFrom).length;
 }
 
 solve({
-  // part1,
+  part1,
   part2,
   part1Tests: [
     [

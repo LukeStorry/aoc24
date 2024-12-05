@@ -32,20 +32,18 @@ function part1({ rules, updates }: Parsed): number {
   return getMiddleValueSum(correct);
 }
 
-function orderCorrectly(rules: Rule[], update: Update): Update {
-  return update.sort((left, right) => {
-    const applicableRule = rules.find(
-      ([before, after]) =>
-        (before == left && after == right) || (before == right && after == left)
-    );
-    return applicableRule?.[0] == left ? 1 : -1;
-  });
-}
-
 function part2({ rules, updates }: Parsed): number {
+  const comparator = (left: number, right: number): 1 | -1 | 0 => {
+    const [applicableRule] = rules.find(
+      ([b, a]) => (b == left && a == right) || (b == right && a == left)
+    );
+    if (!applicableRule) return 0;
+    return applicableRule[0] == left ? 1 : -1;
+  };
+
   const fixedUpdates = updates
     .filter((update) => !isCorrectlyOrdered(rules, update))
-    .map((update) => orderCorrectly(rules, update));
+    .map((update) => update.sort(comparator));
 
   return getMiddleValueSum(fixedUpdates);
 }

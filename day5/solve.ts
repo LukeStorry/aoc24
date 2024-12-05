@@ -1,19 +1,20 @@
 import { sum } from "lodash";
-import { solve } from "../runner/typescript";
+import { solve as submit } from "../runner/typescript";
 
-type Parsed = { rules: [number, number][]; updates: number[][] };
+type Rule = [number, number];
+type Update = number[];
+type Parsed = { rules: Rule[]; updates: Update[] };
 function parser(input: string): Parsed {
   const [rulesStr, updatesStr] = input.split("\n\n");
   return {
-    rules: rulesStr.split("\n").map((line) => {
-      const [before, after] = line.split("|");
-      return [Number(before), Number(after)];
-    }),
+    rules: rulesStr
+      .split("\n")
+      .map((line) => line.split("|").map(Number) as Rule),
     updates: updatesStr.split("\n").map((line) => line.split(",").map(Number)),
   };
 }
 
-function updateInRightOrder(rules: [number, number][], update: number[]) {
+function isCorrectlyOrdered(rules: Rule[], update: Update) {
   return rules.every(([before, after]) => {
     const beforeIndex = update.findIndex((value) => value === before);
     const afterIndex = update.findIndex((value) => value === after);
@@ -21,31 +22,37 @@ function updateInRightOrder(rules: [number, number][], update: number[]) {
   });
 }
 
-function part1({ rules, updates }: Parsed): number {
-  const printed = updates.filter((update) => updateInRightOrder(rules, update));
-  const middleValues = printed.map(
-    (update) => update[Math.floor(update.length / 2)]
-  );
-  return sum(middleValues);
+function getMiddleValueSum(updates: Update[]): number {
+  return sum(updates.map((update) => update[Math.floor(update.length / 2)]));
 }
 
-function part2(values: any[]): any[] {
-  function func2(a) {
-    return a;
+function part1({ rules, updates }: Parsed): number {
+  const correct = updates.filter((update) => isCorrectlyOrdered(rules, update));
+  return getMiddleValueSum(correct);
+}
+
+function part2({ rules, updates }: Parsed): number {
+  function compareFn(a: number, b: number) {
+    const applicableRule = rules.find(
+      ([before, after]) =>
+        (a === before && b === after) || (b === before && a === after)
+    );
+    if (!applicableRule) return 0;
+    const [before] = applicableRule;
+    return a === before ? 1 : -1;
   }
 
-  const out1 = func2(values[0]);
+  const fixed = updates
+    .filter((update) => !isCorrectlyOrdered(rules, update))
+    .map((update) => update.sort(compareFn));
 
-  console.log(out1);
-
-  return values.map(func2);
+  return getMiddleValueSum(fixed);
 }
 
-solve({
+submit({
   parser,
   part1,
-  // part2,
-
+  part2,
   part1Tests: [
     [
       "47|53\n97|13\n97|61\n97|47\n75|29\n61|13\n75|53\n29|13\n97|29\n53|29\n61|53\n97|53\n61|29\n47|13\n75|47\n97|75\n47|61\n75|61\n47|29\n75|13\n53|13\n\n75,47,61,53,29\n97,61,53,29,13\n75,29,13\n75,97,47,61,53\n61,13,29\n97,13,75,29,47",
@@ -53,7 +60,9 @@ solve({
     ],
   ],
   part2Tests: [
-    // ["aaa", 0],
-    // ["a", 0],
+    [
+      "47|53\n97|13\n97|61\n97|47\n75|29\n61|13\n75|53\n29|13\n97|29\n53|29\n61|53\n97|53\n61|29\n47|13\n75|47\n97|75\n47|61\n75|61\n47|29\n75|13\n53|13\n\n75,47,61,53,29\n97,61,53,29,13\n75,29,13\n75,97,47,61,53\n61,13,29\n97,13,75,29,47",
+      123,
+    ],
   ],
 });

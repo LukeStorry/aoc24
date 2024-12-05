@@ -1,9 +1,8 @@
 import { solve } from "../runner/typescript";
 import { max, sum, groupBy } from "lodash";
 
-type Parsed = {};
 function parser(input: string) {
-  function lineParser(line: string): Parsed[] {
+  function lineParser(line: string) {
     console.log(line);
 
     const values = line.match(/\d/g).map(Number);
@@ -18,45 +17,25 @@ function parser(input: string) {
   // const first = lineParser(firstLine);
 
   // return [first];
-  // return lines.slice(0, lines.length).map(lineParser);
   const result = lines.map(lineParser);
   return result;
 }
+type Parsed = ReturnType<typeof parser>;
 
-function part1(values: any[]): number {
-  function func(value) {
-    console.log(value);
-    const result = value + value;
+function part1(values: Parsed): number {
+  console.log({ values });
 
-    console.log(value);
-    console.log("\n");
-
-    return result;
-  }
-
-  const out1 = func(values[0]);
-
-  console.log(out1);
-
-  return sum(values.map(func));
+  return 0;
 }
 
-function part2(values: any[]): any[] {
-  function func2(a) {
-    return a;
-  }
-
-  const out1 = func2(values[0]);
-
-  console.log(out1);
-
-  return values.map(func2);
+function part2(values: Parsed): number {
+  return 0;
 }
 
 solve({
-  parser: parser,
-  part1: part1,
-  // part2: part2,
+  parser,
+  part1,
+  // part2,
 
   part1Tests: [
     ["aaa", 0],

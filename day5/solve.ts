@@ -1,4 +1,3 @@
-import { sum } from "lodash";
 import { solve as submit } from "../runner/typescript";
 
 type Rule = [number, number];
@@ -23,7 +22,9 @@ function isCorrectlyOrdered(rules: Rule[], update: Update) {
 }
 
 function getMiddleValueSum(updates: Update[]): number {
-  return sum(updates.map((update) => update[Math.floor(update.length / 2)]));
+  return updates
+    .map((update) => update[Math.floor(update.length / 2)])
+    .reduce((acc, curr) => acc + curr, 0);
 }
 
 function part1({ rules, updates }: Parsed): number {
@@ -31,22 +32,22 @@ function part1({ rules, updates }: Parsed): number {
   return getMiddleValueSum(correct);
 }
 
-function part2({ rules, updates }: Parsed): number {
-  function compareFn(a: number, b: number) {
+function orderCorrectly(rules: Rule[], update: Update): Update {
+  return update.sort((left, right) => {
     const applicableRule = rules.find(
       ([before, after]) =>
-        (a === before && b === after) || (b === before && a === after)
+        (before == left && after == right) || (before == right && after == left)
     );
-    if (!applicableRule) return 0;
-    const [before] = applicableRule;
-    return a === before ? 1 : -1;
-  }
+    return applicableRule?.[0] == left ? 1 : -1;
+  });
+}
 
-  const fixed = updates
+function part2({ rules, updates }: Parsed): number {
+  const fixedUpdates = updates
     .filter((update) => !isCorrectlyOrdered(rules, update))
-    .map((update) => update.sort(compareFn));
+    .map((update) => orderCorrectly(rules, update));
 
-  return getMiddleValueSum(fixed);
+  return getMiddleValueSum(fixedUpdates);
 }
 
 submit({

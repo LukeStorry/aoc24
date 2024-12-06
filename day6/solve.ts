@@ -1,5 +1,4 @@
 import { solve } from "../runner/typescript";
-import { uniqBy } from "lodash";
 
 type Parsed = ReturnType<typeof parser>;
 function parser(input: string) {
@@ -11,32 +10,31 @@ function parser(input: string) {
   return {
     size: lines.length,
     start: { direction: 0, x: guard.x, y: guard.y }!,
-    obstacles: new Set(
+    obstructions: new Set(
       cells.filter(({ char }) => char === "#").map(({ x, y }) => `${x},${y}`)
     ),
-    emptyCells: cells
-      .filter(({ char }) => char === ".")
-      .map(({ x, y }) => ({ x, y })),
   };
 }
 
-function tryPatrol({ obstacles, start, size }: Parsed): {
+function tryPatrol({ obstructions, start, size }: Parsed): {
   cyclic: boolean;
   visited: Set<string>;
 } {
   const visited = new Set<string>();
+  const visitedWithDirection = new Set<string>();
   let { x, y, direction } = start;
   while (true) {
     const hash = `${x},${y},${direction}`;
-    if (visited.has(hash)) return { cyclic: true, visited };
-    visited.add(hash);
+    if (visitedWithDirection.has(hash)) return { cyclic: true, visited };
+    visitedWithDirection.add(hash);
+    visited.add(`${x},${y}`);
 
     const nextX = [0, 1, 0, -1][direction] + x;
     const nextY = [-1, 0, 1, 0][direction] + y;
     if (nextX >= size || nextY >= size || nextX < 0 || nextY < 0)
       return { cyclic: false, visited };
 
-    if (obstacles.has(`${nextX},${nextY}`)) {
+    if (obstructions.has(`${nextX},${nextY}`)) {
       direction = (direction + 1) % 4;
     } else {
       x = nextX;
@@ -46,18 +44,14 @@ function tryPatrol({ obstacles, start, size }: Parsed): {
 }
 
 function part1(input: Parsed): number {
-  const { visited } = tryPatrol(input);
-  return uniqBy(Array.from(visited), (v) => v.slice(0, -1)).length;
+  return tryPatrol(input).visited.size;
 }
 
 function part2(input: Parsed): number {
-  return input.emptyCells.filter(
-    ({ x, y }) =>
-      tryPatrol({
-        ...input,
-        obstacles: new Set([...input.obstacles, `${x},${y}`]),
-      }).cyclic
-  ).length;
+  return Array.from(tryPatrol(input).visited)
+    .map((o) => new Set([...input.obstructions, o]))
+    .filter((obstructions) => tryPatrol({ ...input, obstructions }).cyclic)
+    .length;
 }
 
 solve({

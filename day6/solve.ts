@@ -49,6 +49,7 @@ function part1(input: Parsed): number {
 
 function part2(input: Parsed): number {
   return Array.from(tryPatrol(input).visited)
+    .filter((o) => o !== `${input.start.x},${input.start.y}`)
     .map((o) => new Set([...input.obstructions, o]))
     .filter((obstructions) => tryPatrol({ ...input, obstructions }).cyclic)
     .length;

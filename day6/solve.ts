@@ -20,12 +20,6 @@ function parser(input: string) {
   };
 }
 
-const deltas = [
-  [0, -1],
-  [1, 0],
-  [0, 1],
-  [-1, 0],
-];
 function tryPatrol({ obstacles, start, size }: Parsed): {
   cyclic: boolean;
   visited: Set<string>;
@@ -37,9 +31,8 @@ function tryPatrol({ obstacles, start, size }: Parsed): {
     if (visited.has(hash)) return { cyclic: true, visited };
     visited.add(hash);
 
-    const [dx, dy] = deltas[direction];
-    const nextX = dx + x;
-    const nextY = dy + y;
+    const nextX = [0, 1, 0, -1][direction] + x;
+    const nextY = [-1, 0, 1, 0][direction] + y;
     if (nextX >= size || nextY >= size || nextX < 0 || nextY < 0)
       return { cyclic: false, visited };
 

@@ -1,67 +1,68 @@
 import { solve } from "../runner/typescript";
-import { max, sum, groupBy, values, uniqBy, isEqual, omit } from "lodash";
-
-const directions = [
-  [0, -1],
-  [1, 0],
-  [0, 1],
-  [-1, 0],
-];
+import { uniqBy } from "lodash";
 
 type Parsed = ReturnType<typeof parser>;
 function parser(input: string) {
   const lines = input.split("\n");
-  const size = lines.length;
   const cells = lines.flatMap((l, y) =>
     l.split("").map((char, x) => ({ char, x, y }))
   );
   const guard = cells.find(({ char }) => char === "^");
-  const start = { direction: 0, x: guard.x, y: guard.y }!;
-  const obstacles = new Set(
-    cells.filter(({ char }) => char === "#").map((c) => `${c.x},${c.y}`)
-  );
-  const emptyCells = cells.filter(({ char }) => char === ".");
-  return { obstacles, start, size, emptyCells };
+  return {
+    size: lines.length,
+    start: { direction: 0, x: guard.x, y: guard.y }!,
+    obstacles: new Set(
+      cells.filter(({ char }) => char === "#").map(({ x, y }) => `${x},${y}`)
+    ),
+    emptyCells: cells
+      .filter(({ char }) => char === ".")
+      .map(({ x, y }) => ({ x, y })),
+  };
 }
 
+const move = [
+  (x, y) => [x, y - 1],
+  (x, y) => [x + 1, y],
+  (x, y) => [x, y + 1],
+  (x, y) => [x - 1, y],
+];
 function tryPatrol({ obstacles, start, size }: Parsed): {
   cyclic: boolean;
-  visited: { x: number; y: number }[];
+  visited: Set<string>;
 } {
-  let visited = [];
-  const visitedSet = new Set();
+  const visited = new Set<string>();
   let { x, y, direction } = start;
   while (true) {
-    if (x >= size || y >= size || x < 0 || y < 0)
+    const hash = `${x},${y},${direction}`;
+    if (visited.has(hash)) return { cyclic: true, visited };
+    visited.add(hash);
+
+    const [nextX, nextY] = move[direction](x, y);
+    if (nextX >= size || nextY >= size || nextX < 0 || nextY < 0)
       return { cyclic: false, visited };
 
-    const hash = `${x},${y},${direction}`;
-    if (visitedSet.has(hash)) return { cyclic: true, visited };
-    visited.push({ x, y });
-    visitedSet.add(hash);
-
-    const [dx, dy] = directions[direction];
-    const nextX = x + dx;
-    const nextY = y + dy;
     if (obstacles.has(`${nextX},${nextY}`)) {
       direction = (direction + 1) % 4;
     } else {
-      x = nextX;
-      y = nextY;
+      [x, y] = [nextX, nextY];
     }
   }
 }
 
 function part1(input: Parsed): number {
   const { visited } = tryPatrol(input);
-
-  return uniqBy(visited, (v) => `${v.x},${v.y}`).length;
+  return uniqBy(Array.from(visited), (v) => v.slice(0, -1)).length;
 }
 
 function part2(input: Parsed): number {
   return input.emptyCells
-    .map(({ x, y }) => new Set([...input.obstacles, `${x},${y}`]))
-    .filter((obstacles) => tryPatrol({ ...input, obstacles }).cyclic).length;
+    .map(({ x, y }) =>
+      tryPatrol({
+        ...input,
+        obstacles: new Set([...input.obstacles, `${x},${y}`]),
+      })
+    )
+    .filter((patrol) => patrol.cyclic).length;
 }
 
 solve({

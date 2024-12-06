@@ -20,11 +20,11 @@ function parser(input: string) {
   };
 }
 
-const move = [
-  (x, y) => [x, y - 1],
-  (x, y) => [x + 1, y],
-  (x, y) => [x, y + 1],
-  (x, y) => [x - 1, y],
+const deltas = [
+  [0, -1],
+  [1, 0],
+  [0, 1],
+  [-1, 0],
 ];
 function tryPatrol({ obstacles, start, size }: Parsed): {
   cyclic: boolean;
@@ -37,14 +37,17 @@ function tryPatrol({ obstacles, start, size }: Parsed): {
     if (visited.has(hash)) return { cyclic: true, visited };
     visited.add(hash);
 
-    const [nextX, nextY] = move[direction](x, y);
+    const [dx, dy] = deltas[direction];
+    const nextX = dx + x;
+    const nextY = dy + y;
     if (nextX >= size || nextY >= size || nextX < 0 || nextY < 0)
       return { cyclic: false, visited };
 
     if (obstacles.has(`${nextX},${nextY}`)) {
       direction = (direction + 1) % 4;
     } else {
-      [x, y] = [nextX, nextY];
+      x = nextX;
+      y = nextY;
     }
   }
 }
@@ -55,14 +58,13 @@ function part1(input: Parsed): number {
 }
 
 function part2(input: Parsed): number {
-  return input.emptyCells
-    .map(({ x, y }) =>
+  return input.emptyCells.filter(
+    ({ x, y }) =>
       tryPatrol({
         ...input,
         obstacles: new Set([...input.obstacles, `${x},${y}`]),
-      })
-    )
-    .filter((patrol) => patrol.cyclic).length;
+      }).cyclic
+  ).length;
 }
 
 solve({
@@ -82,5 +84,4 @@ solve({
       6,
     ],
   ],
-  onlyTests: true,
 });

@@ -6,7 +6,9 @@
     "correctSolution": "4776"
   },
   "part2": {
-    "attemptedSolutions": [],
-    "correctSolution": null
+    "attemptedSolutions": [
+      "1586"
+    ],
+    "correctSolution": "1586"
   }
 }

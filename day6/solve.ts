@@ -1,25 +1,20 @@
 import { solve } from "../runner/typescript";
 import { max, sum, groupBy, values, uniqBy } from "lodash";
 
-type Coord = { x: number; y: number };
+type Coord = `${number},${number}`;
 function parser(input: string) {
-  const lines = input.split("\n").map((l) => l.split(""));
-  const width = lines[0].length;
-  const height = lines.length;
-  let guardPosition;
-  const blocks: Coord[] = [];
-  lines.forEach((line, y) => {
-    line.forEach((char, x) => {
-      if (char === ".") return;
-      if (char === "#") {
-        blocks.push({ x, y });
-      }
-      if (char === "^") {
-        guardPosition = { x, y };
-      }
-    });
-  });
-  return { blocks, guardPosition, width, height };
+  const lines = input.split("\n");
+  const size = lines.length;
+  const cells = lines.flatMap((l, y) =>
+    l.split("").map((char, x) => ({ char, x, y }))
+  );
+
+  const guardPosition = cells.find(({ char }) => char === "^");
+
+  const blocks = new Set(
+    cells.filter(({ char }) => char === "#").map<Coord>((c) => `${c.x},${c.y}`)
+  );
+  return { blocks, guardPosition, size };
 }
 type Parsed = ReturnType<typeof parser>;
 
@@ -30,30 +25,30 @@ const directions = [
   { dx: -1, dy: 0 },
 ];
 
-function part1({ blocks, guardPosition, width, height }: Parsed): number {
-  console.log({ blocks, guardPosition, width, height });
+function part1({ blocks, guardPosition, size }: Parsed): number {
+  let current = { x: guardPosition.x, y: guardPosition.y };
+  let visited: Set<Coord> = new Set();
+  let direction = 0;
 
-  let visited: Coord[] = [];
-  let direction = directions[0];
   while (
-    guardPosition.x < width &&
-    guardPosition.y < height &&
-    guardPosition.x >= 0 &&
-    guardPosition.y >= 0
+    current.x < size &&
+    current.y < size &&
+    current.x >= 0 &&
+    current.y >= 0
   ) {
-    visited.push(guardPosition);
+    visited.add(`${current.x},${current.y}`);
 
     const nextPosition = {
-      x: guardPosition.x + direction.dx,
-      y: guardPosition.y + direction.dy,
+      x: current.x + directions[direction].dx,
+      y: current.y + directions[direction].dy,
     };
-    if (blocks.some((b) => b.x === nextPosition.x && b.y === nextPosition.y)) {
-      direction = directions[(directions.indexOf(direction) + 1) % 4];
+    if (blocks.has(`${nextPosition.x},${nextPosition.y}`)) {
+      direction = (direction + 1) % 4;
     } else {
-      guardPosition = nextPosition;
+      current = nextPosition;
     }
   }
-  return uniqBy(visited, (v) => `${v.x},${v.y}`).length;
+  return Array.from(visited).length;
 }
 
 function part2(values: Parsed): number {
@@ -72,7 +67,9 @@ solve({
     ],
   ],
   part2Tests: [
-    // ["aaa", 0],
-    // ["a", 0],
+    [
+      "....#.....\n.........#\n..........\n..#.......\n.......#..\n..........\n.#..^.....\n........#.\n#.........\n......#...",
+      6,
+    ],
   ],
 });

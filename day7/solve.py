@@ -4,10 +4,10 @@ from runner.python import solve
 
 def parse(input):
   return [
-    [
+    (
       int(line.split(": ")[0]),
       [int(x) for x in line.split(": ")[1].split(" ")],
-    ]
+    )
     for line in input.splitlines()
   ]
 

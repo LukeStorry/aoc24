@@ -1,39 +1,41 @@
 import { solve } from "../runner/typescript";
 import { sum } from "lodash";
 
-type Equation = [number, number[]];
+type Equation = { target: number; values: number[] };
 
 function parser(input: string) {
   return input.split("\n").map<Equation>((line) => {
     const [targetStr, valsStr] = line.split(": ");
-    return [Number(targetStr), valsStr.split(" ").map(Number)];
+    return {
+      target: Number(targetStr),
+      values: valsStr.split(" ").map(Number),
+    };
   });
 }
 
-function canBeSolved([target, values]: Equation, withConcat = false): boolean {
-  function operate(subtotal: number, index: number) {
-    if (index == values.length) return subtotal == target;
-    const next = values[index];
-    return (
-      operate(subtotal + next, index + 1) ||
-      operate(subtotal * next, index + 1) ||
-      (withConcat && operate(Number(`${subtotal}${next}`), index + 1))
-    );
-  }
-
-  return operate(values[0], 1);
+function canBeSolved(
+  equation: Equation,
+  withConcat = false,
+  subtotal = equation.values[0],
+  index = 1
+): boolean {
+  if (index == equation.values.length) return subtotal == equation.target;
+  const next = equation.values[index];
+  return [
+    subtotal + next,
+    subtotal * next,
+    withConcat && Number(`${subtotal}${next}`),
+  ].some((subtotal) => canBeSolved(equation, withConcat, subtotal, index + 1));
 }
 
 function part1(equations: Equation[]): number {
-  return sum(
-    equations.filter((e) => canBeSolved(e)).map(([target, _]) => target)
-  );
+  const solvable = equations.filter((eq) => canBeSolved(eq));
+  return sum(solvable.map((eq) => eq.target));
 }
 
 function part2(equations: Equation[]): number {
-  return sum(
-    equations.filter((e) => canBeSolved(e, true)).map(([target, _]) => target)
-  );
+  const solvableWIthConcat = equations.filter((eq) => canBeSolved(eq, true));
+  return sum(solvableWIthConcat.map((eq) => eq.target));
 }
 
 solve({

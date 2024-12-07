@@ -11,18 +11,17 @@ function parser(input: string) {
 }
 
 function canBeSolved([target, values]: Equation, withConcat = false): boolean {
-  function solve(remaining: number[], subtotal: number) {
-    if (!remaining.length) return subtotal == target;
-    const [next, ...rest] = remaining;
+  function operate(subtotal: number, index: number) {
+    if (index == values.length) return subtotal == target;
+    const next = values[index];
     return (
-      solve(rest, subtotal + next) ||
-      solve(rest, subtotal * next) ||
-      (withConcat && solve(rest, Number(`${subtotal}${next}`)))
+      operate(subtotal + next, index + 1) ||
+      operate(subtotal * next, index + 1) ||
+      (withConcat && operate(Number(`${subtotal}${next}`), index + 1))
     );
   }
 
-  const subtotal = values.shift();
-  return solve(values, subtotal);
+  return operate(values[0], 1);
 }
 
 function part1(equations: Equation[]): number {

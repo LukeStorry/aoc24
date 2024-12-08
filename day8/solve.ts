@@ -1,95 +1,73 @@
 import { solve } from "../runner/typescript";
-import { max, sum, groupBy, range } from "lodash";
+import { groupBy } from "lodash";
 
-function parser(input: string) {
+type Point = { x: number; y: number };
+type Parsed = { antennae: Point[][]; size: number };
+
+function parser(input: string): Parsed {
   const lines = input.split("\n");
-  const size = lines.length;
-  const cells = lines
-    .flatMap((l, y) =>
-      l.split("").map((char, x) => (char == "." ? null : { x, y, char }))
-    )
-    .filter((c) => !!c);
-  const antennae = groupBy(cells, "char");
-
-  // const firstLine = lines[0];
-  // const first = lineParser(firstLine);
-
-  return { antennae, size };
-}
-type Parsed = ReturnType<typeof parser>;
-
-function print(
-  size: number,
-  antennae: Record<string, { x: number; y: number }[]>,
-  antinodes: Set<string>
-) {
-  const grid = range(size).map(() => range(size).map(() => "."));
-
-  for (const [antenna, locations] of Object.entries(antennae)) {
-    for (const { x, y } of locations) {
-      grid[y][x] = antenna;
-    }
-  }
-  for (const a of antinodes) {
-    const [x, y] = a.split(",").map(Number);
-    grid[y][x] = "#";
-  }
-  console.log(grid.map((r) => r.join("")).join("\n"));
-  console.log("");
+  const cells = lines.flatMap((line, y) =>
+    line.split("").flatMap((char, x) => (char != "." ? [{ x, y, char }] : []))
+  );
+  return {
+    antennae: Object.values(groupBy(cells, "char")),
+    size: lines.length,
+  };
 }
 
-function part1({ size, antennae }: Parsed): number {
-  const antinodes = new Set<string>();
-  for (const x of range(size)) {
-    for (const y of range(size)) {
-      for (const locations of Object.values(antennae)) {
-        for (const { x: ax, y: ay } of locations) {
-          for (const { x: bx, y: by } of locations) {
-            if (ax == bx && ay == by) continue;
-            const adx = ax - x;
-            const ady = ay - y;
-            const bdx = bx - x;
-            const bdy = by - y;
-            if (
-              (adx == 2 * bdx && ady == 2 * bdy) ||
-              (adx == -2 * bdx && ady == -2 * bdy)
-            ) {
-              antinodes.add(`${x},${y}`);
+function isEqual(a: Point, b: Point): boolean {
+  return a.x === b.x && a.y === b.y;
+}
+
+function pairwise<T>(arr: T[]): [T, T][] {
+  return arr.flatMap((a, i) => arr.slice(i + 1).map<[T, T]>((b) => [a, b]));
+}
+
+function countAntipodes(
+  { size, antennae }: Parsed,
+  isAntipode: (antennaOne: Point, antennaTwo: Point, test: Point) => boolean
+): number {
+  const points = new Set<string>();
+  for (let x = 0; x < size; x++) {
+    for (let y = 0; y < size; y++) {
+      const test = { x, y };
+      for (const antennaLocations of antennae) {
+        for (const a of antennaLocations) {
+          for (const b of antennaLocations) {
+            if (isEqual(b, a)) continue;
+            if (isAntipode(a, b, test)) {
+              points.add(`${x},${y}`);
+              break;
             }
           }
         }
       }
     }
   }
-
-  return antinodes.size;
+  return points.size;
 }
 
-function part2({ size, antennae }: Parsed): number {
-  const antinodes = new Set<string>();
+function part1(data: Parsed): number {
+  return countAntipodes(
+    data,
+    (antennaOne, antennaTwo, test) =>
+      // Difference is twice the difference between the other antenna and the test point
+      antennaOne.x - test.x == 2 * (antennaTwo.x - test.x) &&
+      antennaOne.y - test.y == 2 * (antennaTwo.y - test.y)
+  );
+}
 
-  for (const x of range(size)) {
-    for (const y of range(size)) {
-      for (const locations of Object.values(antennae)) {
-        for (const { x: ax, y: ay } of locations) {
-          for (const { x: bx, y: by } of locations) {
-            if (ax == bx && ay == by) continue;
-            antinodes.add(`${ax},${ay}`);
-            antinodes.add(`${bx},${by}`);
-            const adx = ax - x;
-            const ady = ay - y;
-            const bdx = bx - x;
-            const bdy = by - y;
-            if (adx / ady == bdx / bdy || adx / ady == -bdx / -bdy) {
-              antinodes.add(`${x},${y}`);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return antinodes.size;
+function part2(data: Parsed): number {
+  return countAntipodes(
+    data,
+    (antennaOne, antennaTwo, test) =>
+      // One of the antennas is the test point
+      isEqual(antennaOne, test) ||
+      isEqual(antennaTwo, test) ||
+      // The gradient from the test point to the antennas is the same
+      (antennaOne.x - test.x) / (antennaOne.y - test.y) ==
+        (antennaTwo.x - test.x) / (antennaTwo.y - test.y)
+  );
 }
 
 solve({

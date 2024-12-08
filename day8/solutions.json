@@ -1,12 +1,10 @@
 {
   "part1": {
-    "attemptedSolutions": [
-      "354"
-    ],
+    "attemptedSolutions": ["354"],
     "correctSolution": "354"
   },
   "part2": {
-    "attemptedSolutions": [],
-    "correctSolution": null
+    "attemptedSolutions": ["1256", "1263"],
+    "correctSolution": 1263
   }
 }

@@ -24,6 +24,7 @@ function print(
   antinodes: Set<string>
 ) {
   const grid = range(size).map(() => range(size).map(() => "."));
+
   for (const [antenna, locations] of Object.entries(antennae)) {
     for (const { x, y } of locations) {
       grid[y][x] = antenna;
@@ -34,6 +35,7 @@ function print(
     grid[y][x] = "#";
   }
   console.log(grid.map((r) => r.join("")).join("\n"));
+  console.log("");
 }
 
 function part1({ size, antennae }: Parsed): number {
@@ -63,14 +65,37 @@ function part1({ size, antennae }: Parsed): number {
   return antinodes.size;
 }
 
-function part2(values: Parsed): number {
-  return 0;
+function part2({ size, antennae }: Parsed): number {
+  const antinodes = new Set<string>();
+
+  for (const x of range(size)) {
+    for (const y of range(size)) {
+      for (const locations of Object.values(antennae)) {
+        for (const { x: ax, y: ay } of locations) {
+          for (const { x: bx, y: by } of locations) {
+            if (ax == bx && ay == by) continue;
+            antinodes.add(`${ax},${ay}`);
+            antinodes.add(`${bx},${by}`);
+            const adx = ax - x;
+            const ady = ay - y;
+            const bdx = bx - x;
+            const bdy = by - y;
+            if (adx / ady == bdx / bdy || adx / ady == -bdx / -bdy) {
+              antinodes.add(`${x},${y}`);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return antinodes.size;
 }
 
 solve({
   parser,
   part1,
-  // part2,
+  part2,
 
   part1Tests: [
     [
@@ -79,7 +104,13 @@ solve({
     ],
   ],
   part2Tests: [
-    // ["aaa", 0],
-    // ["a", 0],
+    [
+      "T.........\n...T......\n.T........\n..........\n..........\n..........\n..........\n..........\n..........\n..........",
+      9,
+    ],
+    [
+      "............\n........0...\n.....0......\n.......0....\n....0.......\n......A.....\n............\n............\n........A...\n.........A..\n............\n............",
+      34,
+    ],
   ],
 });

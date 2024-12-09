@@ -6,7 +6,10 @@
     "correctSolution": "6310675819476"
   },
   "part2": {
-    "attemptedSolutions": [],
-    "correctSolution": null
+    "attemptedSolutions": [
+      "7809811",
+      "6335972980679"
+    ],
+    "correctSolution": "6335972980679"
   }
 }

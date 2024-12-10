@@ -1,6 +1,5 @@
 import { config } from "dotenv";
 import { readFileSync, writeFileSync } from "fs";
-import { dirname } from "path";
 
 config();
 
@@ -104,7 +103,7 @@ export async function solve<T, TResult1, TResult2>({
 
 async function checkAnswer(part: number, day: string, answer: string) {
   const result = await fetch(
-    `https://adventofcode.com/2023/day/${day}/answer`,
+    `https://adventofcode.com/${process.env.YEAR}/day/${day}/answer`,
     {
       method: "POST",
       headers: {
@@ -136,6 +135,11 @@ async function checkAnswer(part: number, day: string, answer: string) {
     console.log(`Wrong answer\n${body}`);
     return false;
   }
+  if (body.includes("already complete")) {
+    console.log(`Already complete\n${body}`);
+    return false;
+  }
+  console.log(body);
   console.log("Correct answer!");
   return true;
 }

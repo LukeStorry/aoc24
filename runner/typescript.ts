@@ -139,7 +139,13 @@ async function checkAnswer(part: number, day: string, answer: string) {
     console.log(`Already complete\n${body}`);
     return false;
   }
+  if (body.includes("That's the right answer")) {
+    console.log(`Already complete\n${body}`);
+    console.log("Correct answer!");
+    return true;
+  }
+
+  console.log("UNKNOWN RESPONSE");
   console.log(body);
-  console.log("Correct answer!");
-  return true;
+  return false;
 }

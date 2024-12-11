@@ -1,3 +1,4 @@
+import { sum, uniq } from "lodash";
 import { solve } from "../runner/typescript";
 
 function parser(input: string) {
@@ -27,16 +28,24 @@ function part1(rocks: number[]): number {
 }
 
 function part2(rocks: number[]): number {
+  let counts = new Map(rocks.map((rock) => [rock, 1]));
+
   for (let i = 0; i < 75; i++) {
-    rocks = rocks.flatMap(blink);
-    console.log(i, rocks.length);
+    const newCounts = new Map();
+    counts.forEach((count, rock) =>
+      blink(rock).forEach((newRock) =>
+        newCounts.set(newRock, (newCounts.get(newRock) || 0) + count)
+      )
+    );
+    counts = newCounts;
   }
-  return rocks.length;
+
+  return sum([...counts.values()]);
 }
 
 solve({
   parser,
-  // part1,
+  part1,
   part2,
-  // part1Tests: [["125 17", 55312]],
+  part1Tests: [["125 17", 55312]],
 });

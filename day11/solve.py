@@ -1,43 +1,33 @@
 from runner.python import solve
-
-import math
 from collections import defaultdict
+from math import log10
 
 
-def blink(rock: int) -> list[int]:
-  if rock == 0:
-    return [1]
-
-  num_digits = math.floor(math.log10(rock)) + 1
-  if num_digits % 2 == 0:
-    half_digits = num_digits // 2
-    divisor = 10**half_digits
-    right_half = rock % divisor
-    left_half = rock // divisor
-    return [left_half, right_half]
-
-  return [rock * 2024]
+def iterate(rocks, times: int) -> int:
+  counts = {rock: 1 for rock in rocks}
+  for _ in range(times):
+    new_counts: defaultdict[int, int] = defaultdict(int)
+    for rock, count in counts.items():
+      if rock == 0:
+        new_counts[1] += count
+      elif 0 == (digits := int(log10(rock)) + 1) % 2:
+        divisor = 10 ** (digits // 2)
+        new_counts[rock // divisor] += count
+        new_counts[rock % divisor] += count
+      else:
+        new_counts[rock * 2024] += count
+    counts = new_counts
+  return sum(counts.values())
 
 
 def part1(input: str) -> int:
   rocks = list(map(int, input.split()))
-  for _ in range(25):
-    rocks = [r for rock in rocks for r in blink(rock)]
-  return len(rocks)
+  return iterate(rocks, 25)
 
 
 def part2(input: str) -> int:
   rocks = list(map(int, input.split()))
-  counts = {rock: 1 for rock in rocks}
-
-  for _ in range(75):
-    new_counts = defaultdict(int)
-    for rock, count in counts.items():
-      for new_rock in blink(rock):
-        new_counts[new_rock] += count
-    counts = new_counts
-
-  return sum(counts.values())
+  return iterate(rocks, 75)
 
 
 solve(

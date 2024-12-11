@@ -132,15 +132,23 @@ async function checkAnswer(part: number, day: string, answer: string) {
     // throw new Error(`Wait before submitting\n${body}`);
   }
   if (body.includes("not the right answer")) {
-    console.log(`Wrong answer\n${body}`);
+    if (body.includes("too low")) {
+      console.log("TOO LOW!");
+      return false;
+    }
+    if (body.includes("too high")) {
+      console.log("TOO HIGH!");
+      return false;
+    }
+    console.log(body);
+    console.log(`Wrong answer!`);
     return false;
   }
   if (body.includes("already complete")) {
-    console.log(`Already complete\n${body}`);
+    console.log(`Already completed!`);
     return false;
   }
   if (body.includes("That's the right answer")) {
-    console.log(`Already complete\n${body}`);
     console.log("Correct answer!");
     return true;
   }

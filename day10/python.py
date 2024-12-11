@@ -1,30 +1,17 @@
-map = [
-  list(map(int, line))
-  for line in open("day10/input.txt").read().splitlines()
-]
-trailheads = [
-  (x, y)
-  for y in range(len(map))
-  for x in range(len(map[0]))
-  if map[y][x] == 0
-]
+map = [list(map(int, line)) for line in open("day10/input.txt").read().splitlines()]
 
-
-def get_trail_ends_from(x: int, y: int):
+def get_trail_ends_from(x, y):
   if map[y][x] == 9:
     return [(x, y)]
-
-  return [
-    trail_end
-    for next_x, next_y in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
-    if 0 <= next_y < len(map)
-    and 0 <= next_x < len(map[0])
-    and map[next_y][next_x] == map[y][x] + 1
-    for trail_end in get_trail_ends_from(next_x, next_y)
+  next_steps = [
+    (nx, ny)
+    for nx, ny in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+    if 0 <= ny < len(map) and 0 <= nx < len(map[0]) and map[ny][nx] == map[y][x] + 1
   ]
+  return [ends for step in next_steps for ends in get_trail_ends_from(*step)]
 
-
-trail_ends = [get_trail_ends_from(x, y) for x, y in trailheads]
-part1 = sum(len(set(trail_end)) for trail_end in trail_ends)
-part2 = sum(len(trail_end) for trail_end in trail_ends)
+trailheads = [(x, y) for y in range(len(map)) for x in range(len(map[0])) if map[y][x] == 0]
+trails = [get_trail_ends_from(*head) for head in trailheads]
+part1 = sum(len(set(ends)) for ends in trails)
+part2 = sum(len(ends) for ends in trails)
 print(part1, part2)
